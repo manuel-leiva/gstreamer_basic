@@ -66,10 +66,32 @@ flowchart LR
 
 - `video_%u`, `audio_%u`, and `subtitle_%u` are request sink pad templates.
 - `src` is the always-available source pad.
-
+### Example
 ```bash
 gst-inspect-1.0 mp4mux
-``` 
+```
+## Pad link error example
+
+```bash
+# RAW video source
+gst-launch-1.0 videotestsrc ! video/x-raw,width=320,height=240 ! videoconvert ! xvimagesink -v
+# BAYER video source
+gst-launch-1.0 videotestsrc ! video/x-bayer,width=320,height=240 ! videoconvert ! xvimagesink -v
+```
+
+### Pad description
+```bash
+gst-inspect-1.0 videotestsrc | grep -e "SRC" -e SINK -e Capabilities -e video/
+
+gst-inspect-1.0 videoconvert | grep -e "SRC" -e SINK -e Capabilities -e video/
+
+gst-inspect-1.0 xvimagesink | grep -e "SRC" -e SINK -e Capabilities -e video/
+```
+
+### Correct pad link
+```bash
+gst-launch-1.0 videotestsrc ! video/x-bayer,width=320,height=240 ! bayer2rgb ! videoconvert ! xvimagesink -v
+```
 
 ## Buffers
 
