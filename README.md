@@ -38,6 +38,10 @@ gst-inspect-1.0 videotestsrc
 ```  
 # Concepts
 
+## Pipeline states
+ ```bash
+gst-launch-1.0 videotestsrc ! autovideosink
+```
 ## Pads
 
 ```mermaid
