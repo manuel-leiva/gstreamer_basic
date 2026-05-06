@@ -50,6 +50,8 @@ main (int argc,
 {
   GMainLoop *loop;
   GstElement *pipeline;
+  GstElement *source = NULL;
+  GstElement *encoder = NULL;
   GstBus *bus;
   guint bus_watch_id;
 
@@ -65,9 +67,9 @@ main (int argc,
   gchar *pipeline_description;
 
   pipeline_description = g_strdup_printf (
-      "videotestsrc pattern=0 num-buffers=%d ! "
+      "videotestsrc name=video-source pattern=0 num-buffers=%d ! "
       "videoconvert ! "
-      "x264enc tune=%d speed-preset=%d ! "
+      "x264enc name=h264-encoder tune=%d speed-preset=%d ! "
       "h264parse ! "
       "mp4mux ! "
       "filesink location=\"%s\"",
@@ -85,10 +87,24 @@ main (int argc,
     g_main_loop_unref (loop);
     return -1;
   }
+
+  source = gst_bin_get_by_name (GST_BIN (pipeline), "video-source");
+  encoder = gst_bin_get_by_name (GST_BIN (pipeline), "h264-encoder");
+
+  if (!source || !encoder) {
+    g_printerr ("Failed to retrieve parsed element handles.\n");
+    if (source) {
+      gst_object_unref (source);
+    }
+    if (encoder) {
+      gst_object_unref (encoder);
+    }
+    gst_object_unref (pipeline);
+    g_main_loop_unref (loop);
+    return -1;
+  }
 #else
-  GstElement *source;
   GstElement *convert;
-  GstElement *encoder;
   GstElement *parser;
   GstElement *muxer;
   GstElement *sink;
@@ -139,6 +155,12 @@ main (int argc,
   g_main_loop_run (loop);
 
   gst_element_set_state (pipeline, GST_STATE_NULL);
+  if (source) {
+    gst_object_unref (source);
+  }
+  if (encoder) {
+    gst_object_unref (encoder);
+  }
   gst_object_unref (pipeline);
   g_source_remove (bus_watch_id);
   g_main_loop_unref (loop);
